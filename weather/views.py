@@ -4,11 +4,22 @@ from .models import City
 from .forms import CityForm
 
 def index(request):  
-    url = 'http://api.openweathermap.org/data/2.5/weather?q={}&units=imperial&appid=271d1234d3f497eed5b1d80a07b3fcd1' 
+    url = 'http://api.openweathermap.org/data/2.5/weather?q={}&units=imperial&appid=271d1234d3f497eed5b1d80a07b3fcd1'   
+
+    err_msg='' 
 
     if request.method =='POST' :
         form = CityForm(request.POST)  
-        form.save()
+
+        if form.is_valid():
+            new_city = form.cleaned_data['name'] 
+            existing_city_count = City.objects.filter(name=new_city).count() 
+            if existing_city_count==0:
+                
+                print(r)
+                form.save() 
+            else:
+                err_msg= 'City already exists in the database!'
 
     form=CityForm() 
     cities=City.objects.all()  
@@ -16,11 +27,10 @@ def index(request):
     weather_data=[]
 
     for city in cities:
-        r= requests.get(url.format(city)).json()
-
+        r = requests.get(url.format(city)).json() 
         city_weather= { 
             'city': city.name ,    #name bcoz we want name not object (models.py)
-            'temperature': r['main']['temp'],
+            'temperature': ((r['main']['temp'] - 32)*5)/9,
             'description': r['weather'][0]['description'], 
             'icon': r['weather'][0]['icon'],
              }  
